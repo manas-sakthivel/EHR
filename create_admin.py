@@ -4,8 +4,7 @@ Script to create an admin user for the EHR system
 """
 
 from app import create_app, db
-from app.models.user import User
-from app.models.doctor import Doctor
+from app.models import User, Doctor
 from werkzeug.security import generate_password_hash
 
 def create_admin_user():
@@ -20,7 +19,7 @@ def create_admin_user():
         
         # Create admin user
         admin_user = User(
-            name='System Administrator',
+            username='admin',
             email='admin@ehr.com',
             password_hash=generate_password_hash('admin123'),
             role='admin'
@@ -30,6 +29,7 @@ def create_admin_user():
         db.session.commit()
         
         print("Admin user created successfully!")
+        print("Username: admin")
         print("Email: admin@ehr.com")
         print("Password: admin123")
 
@@ -45,7 +45,7 @@ def create_sample_doctor():
         
         # Create doctor user
         doctor_user = User(
-            name='Dr. John Smith',
+            username='drsmith',
             email='doctor@ehr.com',
             password_hash=generate_password_hash('doctor123'),
             role='doctor'
@@ -57,16 +57,21 @@ def create_sample_doctor():
         # Create doctor profile
         doctor = Doctor(
             user_id=doctor_user.id,
+            first_name='John',
+            last_name='Smith',
             specialization='General Medicine',
             license_number='MD123456',
             phone='(555) 123-4567',
-            address='123 Medical Center Dr, City, State 12345'
+            address='123 Medical Center Dr, City, State 12345',
+            experience_years=10,
+            education='MD from Harvard Medical School'
         )
         
         db.session.add(doctor)
         db.session.commit()
         
         print("Sample doctor created successfully!")
+        print("Username: drsmith")
         print("Email: doctor@ehr.com")
         print("Password: doctor123")
 
@@ -77,4 +82,4 @@ if __name__ == '__main__':
     print("\nCreating sample doctor...")
     create_sample_doctor()
     
-    print("\nSetup complete!") 
+    print("\nSetup complete!")

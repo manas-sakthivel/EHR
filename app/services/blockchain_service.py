@@ -15,7 +15,7 @@ class BlockchainService:
         
         # Ganache configuration
         self.ganache_url = "http://127.0.0.1:7545"  # Default Ganache URL
-        self.contract_address = None
+        self.account = None
         self.contract_abi = None
         
     def connect_to_ganache(self):
@@ -26,13 +26,14 @@ class BlockchainService:
             if self.web3.is_connected():
                 print(f"✅ Connected to Ganache at {self.ganache_url}")
                 self.is_connected = True
-                
-                # Set default account (first account in Ganache)
+                # Dynamically use the first Ganache account
                 accounts = self.web3.eth.accounts
-                if accounts:
+                if accounts and len(accounts) > 0:
                     self.account = accounts[0]
                     print(f"✅ Using account: {self.account}")
-                
+                else:
+                    print("❌ No accounts found in Ganache.")
+                    return False
                 return True
             else:
                 print(f"❌ Failed to connect to Ganache at {self.ganache_url}")
@@ -136,17 +137,18 @@ class BlockchainService:
         return []
     
     def set_account(self, account_index=0):
-        """Set the account to use for transactions"""
+        """Set the account to use for transactions (default: first Ganache account)"""
         if not self.is_connected:
             if not self.connect_to_ganache():
                 return None
-        
-        accounts = self.get_accounts()
-        if accounts and account_index < len(accounts):
+        accounts = self.web3.eth.accounts
+        if accounts and len(accounts) > account_index:
             self.account = accounts[account_index]
             print(f"✅ Set account to: {self.account}")
             return self.account
-        return None
+        else:
+            print("❌ No accounts found in Ganache.")
+            return None
     
     def get_balance(self):
         """Get balance of current account in ETH"""

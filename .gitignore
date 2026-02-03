@@ -138,4 +138,5 @@ build/
 # Blockchain and security
 private_keys.json
 contract_address.txt
+ganache_db/
 .env 

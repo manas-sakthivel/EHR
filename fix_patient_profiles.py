@@ -4,9 +4,7 @@ Script to fix missing patient profiles for existing users
 """
 
 from app import create_app, db
-from app.models.user import User
-from app.models.patient import Patient
-from app.models.doctor import Doctor
+from app.models import User, Patient, Doctor
 
 def fix_missing_profiles():
     app = create_app()
@@ -29,17 +27,42 @@ def fix_missing_profiles():
         print(f"Found {len(patients_without_profile)} patients without profiles")
         print(f"Found {len(doctors_without_profile)} doctors without profiles")
         
-        # Create missing patient profiles
+        # Create missing patient profiles with default values for required fields
+        from datetime import date
         for user in patients_without_profile:
-            patient = Patient(user_id=user.id)
+            patient = Patient(
+                user_id=user.id,
+                first_name=user.username.split()[0] if user.username else "Unknown",
+                last_name=user.username.split()[-1] if user.username and len(user.username.split()) > 1 else "Unknown",
+                date_of_birth=date(2000, 1, 1),
+                gender="Other",
+                phone="0000000000",
+                address="Unknown",
+                emergency_contact="None",
+                blood_group=None,
+                allergies=None,
+                medical_history=None
+            )
             db.session.add(patient)
-            print(f"Created patient profile for {user.name} ({user.email})")
+            print(f"Created patient profile for {user.username} ({user.email})")
         
         # Create missing doctor profiles
         for user in doctors_without_profile:
-            doctor = Doctor(user_id=user.id, specialization='General Medicine', license_number='')
+            doctor = Doctor(
+                user_id=user.id,
+                first_name=user.username.split()[0] if user.username else "Unknown",
+                last_name=user.username.split()[-1] if user.username and len(user.username.split()) > 1 else "Unknown",
+                specialization='General Medicine',
+                license_number=f"D-{user.id:04d}",
+                phone="0000000000",
+                address="Unknown",
+                experience_years=0,
+                education="Unknown",
+                consultation_fee=0.0,
+                is_available=True
+            )
             db.session.add(doctor)
-            print(f"Created doctor profile for {user.name} ({user.email})")
+            print(f"Created doctor profile for {user.username} ({user.email})")
         
         if patients_without_profile or doctors_without_profile:
             db.session.commit()
@@ -64,7 +87,7 @@ def list_all_users():
             elif user.role == 'admin':
                 profile_status = "✅ Admin (no profile needed)"
             
-            print(f"{user.name} ({user.email}) - {user.role} - {profile_status}")
+            print(f"{user.username} ({user.email}) - {user.role} - {profile_status}")
 
 if __name__ == '__main__':
     print("Checking for missing user profiles...")
